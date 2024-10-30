@@ -1,81 +1,123 @@
-/**
- * main.h
- * Created on Aug, 23th 2023
- * Author: Tiago Barros
- * Based on "From C to C++ course - 2002"
-*/
-
 #include <string.h>
-
 #include "screen.h"
 #include "keyboard.h"
 #include "timer.h"
 
-int x = 34, y = 12;
-int incX = 1, incY = 1;
+int y = 6;
+int incX = -1;
 
-void printHello(int nextX, int nextY)
-{
+void printHelicopter() {
     screenSetColor(CYAN, DARKGRAY);
-    screenGotoxy(x, y);
-    printf("           ");
-    x = nextX;
-    y = nextY;
-    screenGotoxy(x, y);
-    printf("Hello World");
+    screenGotoxy(0, y);
+    printf(" __ _____ _____                                                                              \n");
+    screenGotoxy(0, y + 1);
+    printf("   |X\\___.-╨─｡_        \n");
+    screenGotoxy(0, y + 2);
+    printf("   ─´‾‾‷\\°★ º  ¯]─     \n");
+    screenGotoxy(0, y + 3);
+    printf("            ‾‾‾‾‾   \n");
 }
 
-void printKey(int ch)
-{
-    screenSetColor(YELLOW, DARKGRAY);
-    screenGotoxy(35, 22);
-    printf("Key code :");
-
-    screenGotoxy(34, 23);
-    printf("            ");
-    
-    if (ch == 27) screenGotoxy(36, 23);
-    else screenGotoxy(39, 23);
-
-    printf("%d ", ch);
-    while (keyhit())
-    {
-        printf("%d ", readch());
-    }
+void printTree(int position) {
+    screenSetColor(GREEN, DARKGRAY);
+    screenGotoxy(position, 10);
+    printf("        /‾‾‾\\   \n");
+    screenGotoxy(position, 11);
+    printf("       /  |  \\  \n");
+    screenGotoxy(position, 12);
+    printf("       \\  |  /  \n");
+    screenGotoxy(position, 13);
+    printf("        \\ | /   \n");
+    screenGotoxy(position, 14);
+    printf("         \\|/    \n");
+    screenGotoxy(position, 15);
+    printf("          |     \n");
 }
 
-int main() 
-{
+void printGround() {
+    screenSetColor(GREEN, GREEN);
+    screenGotoxy(0, MAXY - 1);
+    printf("|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||");
+}
+
+void clearTree(int position) {
+    screenGotoxy(position, 10);
+    printf("                ");
+    screenGotoxy(position, 11);
+    printf("                ");
+    screenGotoxy(position, 12);
+    printf("                ");
+    screenGotoxy(position, 13);
+    printf("                ");
+    screenGotoxy(position, 14);
+    printf("                ");
+    screenGotoxy(position, 15);
+    printf("                ");
+}
+
+void printCloud(int position, int height) {
+    screenSetColor(WHITE, DARKGRAY);
+    screenGotoxy(position, height);
+    printf("   .--.   \n");
+    screenGotoxy(position, height + 1);
+    printf("  (    )  \n");
+    screenGotoxy(position, height + 2);
+    printf("   `--'   \n");
+}
+
+void clearCloud(int position, int height) {
+    screenGotoxy(position, height);
+    printf("          "); 
+    screenGotoxy(position, height + 1);
+    printf("          ");
+    screenGotoxy(position, height + 2);
+    printf("          ");
+}
+
+int main() {
     static int ch = 0;
-
-    screenInit(1);
+    int treePosition1 = (MAXX / 2) - 8; 
+    int treePosition2 = (MAXX / 2) + 5;
+    int cloudPosition = (MAXX / 4);
+    int cloudHeight = 3;
+    screenInit(0);
     keyboardInit();
-    timerInit(50);
+    timerInit(100);
 
-    printHello(x, y);
+    screenClear();
+
+    printHelicopter();
+    printGround();
+    printCloud(cloudPosition, cloudHeight);
     screenUpdate();
 
-    while (ch != 10) //enter
-    {
-        // Handle user input
-        if (keyhit()) 
-        {
-            ch = readch();
-            printKey(ch);
-            screenUpdate();
-        }
+    while (ch != 10) { 
+        if (timerTimeOver() == 1) {
+            clearTree(treePosition1);
+            clearTree(treePosition2);
+            clearCloud(cloudPosition, cloudHeight);
 
-        // Update game state (move elements, verify collision, etc)
-        if (timerTimeOver() == 1)
-        {
-            int newX = x + incX;
-            if (newX >= (MAXX -strlen("Hello World") -1) || newX <= MINX+1) incX = -incX;
-            int newY = y + incY;
-            if (newY >= MAXY-1 || newY <= MINY+1) incY = -incY;
+            printHelicopter();
+            treePosition1 += incX;
+            treePosition2 += incX;
+            cloudPosition += incX;
 
-            printKey(ch);
-            printHello(newX, newY);
+            if (treePosition1 < MINX) {
+                treePosition1 = MAXX - 10;
+            }
+            if (treePosition2 < MINX) {
+                treePosition2 = MAXX - 25;
+            }
+            if (cloudPosition < MINX) {
+                cloudPosition = MAXX - 15;
+            }
+            if (treePosition1 < treePosition2 + 6 && treePosition1 > treePosition2 - 6) {
+                treePosition1 = (treePosition1 < treePosition2) ? treePosition2 + 6 : treePosition2 - 6;
+            }
 
+            printTree(treePosition1);
+            printTree(treePosition2); 
+            printCloud(cloudPosition, cloudHeight);
             screenUpdate();
         }
     }
